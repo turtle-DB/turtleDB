@@ -1,0 +1,471 @@
+@import './normalize';
+@import './skeleton';
+
+@import url('https://fonts.googleapis.com/css?family=Palanquin+Dark');
+
+$black: #000;
+$darkgray: #555;
+$gray: #999;
+$lightgray: #ebebeb;
+$white: #FFF;
+$skeleton-blue: #1EAEDB;
+
+$square-size: 1rem;
+$grid-size: 40;
+
+@mixin all-caps() {
+  font-weight: 600;
+  letter-spacing: .1rem;
+  text-transform: uppercase;
+}
+
+body {
+  // background: url("../images/snake-texture.png");
+  font-size: 1.7em;
+}
+
+// Typography
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Palanquin Dark', sans-serif;
+}
+
+h3, h4, h5, h6 {
+  color: $darkgray;
+}
+
+h1 {
+  font-size: 4rem;
+}
+
+h2 {
+  font-size: 3.3rem;
+}
+
+h3 {
+  font-size: 2.9rem;
+}
+
+h4 {
+  font-size: 2.5rem;
+}
+
+h5 {
+  font-size: 2.3rem;
+}
+
+h6 {
+  font-size: 2.0rem;
+}
+
+aside {
+  color: $gray;
+  font-style: italic;
+  text-align: center;
+}
+
+pre > code {
+  overflow-x: scroll;
+}
+
+// Lists, Tables, Forms
+ul, ol {
+  margin-left: 3rem;
+  text-indent: -2rem;
+}
+
+ul {
+  list-style-type: disc;
+}
+
+ol {
+  li {
+    margin-bottom: .3rem;
+  }
+  > ol {
+    margin-top: 1rem;
+    list-style-type: lower-alpha;
+  }
+}
+
+table {
+  margin: 0 auto 2.5rem auto;
+
+  tbody {
+    th {
+      text-align: right;
+    }
+
+    td {
+      text-align: left;
+    }
+  }
+
+  &.align-center {
+    td, th {
+      text-align: center;
+    }
+  }
+
+  code {
+    white-space: normal;
+  }
+}
+
+.button, button, input[type="submit"], input[type="reset"], input[type="button"] {
+  &:disabled {
+    color: $gray;
+  }
+}
+
+// Header
+header {
+  padding: 1rem;
+  background-color: $lightgray;
+  margin-bottom: 2rem;
+  text-align: center;
+  white-space: nowrap;
+
+  #logo-text {
+    text-align: center;
+    a {
+      display: block;
+      padding-top: .8rem;
+      text-decoration: none;
+      color: inherit;
+
+      h1 {
+        display: inline-block;
+        font-size: 5rem;
+        position: relative;
+        text-align: left;
+        padding-left: 4.3rem;
+      }
+
+      .logo {
+        width: 4.3rem;
+        position: absolute;
+        bottom: 0.8rem;
+        left: 0;
+      }
+    }
+  }
+
+  nav {
+    margin: 2rem 0;
+    text-align: center;
+    white-space: normal;
+
+    a {
+      display: inline-block;
+      margin: .25rem .5rem;
+      padding: 1rem 2rem;
+      border-radius: 4px;
+      border: solid $white 1px;
+      color: $darkgray;
+      text-decoration: none;
+
+      &:hover, &.active {
+        background-color: $white;
+      }
+    }
+  }
+}
+
+// Main
+main.container {
+  padding: 2.5rem 0 10rem 0;
+}
+
+// Game
+#game {
+  * {
+    box-sizing: border-box;
+  }
+
+  #player-list {
+    margin: 0;
+    padding: 0;
+    display: inline-block;
+    width: 100%;
+    vertical-align: top;
+    text-align: center;
+
+    ul {
+      width: 100%;
+      text-align: center;
+      text-indent: 0;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      li {
+        position: relative;
+        width: 100%;
+        max-width: $grid-size * $square-size;
+        text-align: center;
+        display: block;
+        padding: .5rem 3rem;
+        margin: 1px auto;
+        background-color: $black;
+        color: $lightgray;
+        word-break: break-word;
+
+        &.label {
+          background-color: transparent;
+          color: $darkgray;
+        }
+
+        &.ready:before {
+          content: '\2713'; // checkmark
+          display: block;
+          color: white;
+          background-color: green;
+          border-radius: 50%;
+          position: absolute;
+          top: 0;
+          left: 0;
+          margin: .5rem 1rem .5rem .5rem;
+          width: 2rem;
+        }
+      }
+    }
+  }
+
+  #loop {
+    text-align: center;
+  }
+
+  #board-container {
+    padding: 2rem 0 5rem 0;
+    display: inline-block;
+    vertical-align: top;
+    text-align: center;
+    font-size: 0;
+
+    #board {
+      width: $square-size * $grid-size;
+      margin: 0 auto;
+
+      .square {
+        margin: 0;
+        padding: 0;
+        display: inline-block;
+        width: $square-size;
+        height: $square-size;
+        background-color: $lightgray;
+        border: solid white 1px;
+
+        &.alive {
+          background-color: $black;
+        }
+
+        &.dead {
+          background-color: $lightgray; // same as board, hidden
+        }
+      }
+    }
+  }
+
+  // Generate colors for other players
+  $s: 40;
+  $l: 45;
+
+  @for $i from 1 through 25 {
+    $hue: (($i * 85) + 50) % 360;
+    $color: hsl($hue, $s, $l);
+
+    #player-list ul li.id-#{$i} {
+      background-color: $color;
+    }
+
+    #board-container #board .square.id-#{$i} {
+      &.alive {
+        background-color: $color;
+      }
+    }
+  }
+}
+
+// Citations
+.citation {
+  position: relative;
+  cursor: help;
+  margin: 0 .5rem;
+  font-style: normal;
+
+  > a {
+    border-radius: 50%;
+    background-color: $skeleton-blue;
+    color: $white;
+    width: 2rem;
+    height: 2rem;
+    line-height: 1.3;
+    display: inline-block;
+    text-align: center;
+    vertical-align: baseline;
+  }
+
+  > div {
+    color: $black;
+    font-size: 80%;
+    display: block;
+    position: absolute;
+    top: 1rem;
+    left: -15rem;
+    background-color: $white;
+    border: solid 1px $gray;
+    padding: 1rem;
+    border-radius: .5rem;
+    width: 30rem;
+
+    p, div.p {
+      @include all-caps();
+      text-align: center;
+      color: $gray;
+      margin: 0 0 1rem 0;
+    }
+
+    a {
+      word-break: break-word;
+    }
+
+    table {
+      margin: 0;
+      width: 100%;
+
+      th, td {
+        vertical-align: top;
+      }
+
+      th {
+        padding: .2rem 1rem .2rem .2rem;
+      }
+
+      td {
+        padding: .2rem .2rem .2rem 1rem;
+        min-width: 70%;
+      }
+
+      tr:last-child {
+        th, td {
+          border-bottom: none;
+        }
+      }
+    }
+  }
+}
+
+// Miscellaneous
+div.p { // to prevent invalid nesting when using Citation component
+  margin-top: 0;
+  margin-bottom: 2.5rem;
+}
+
+#messages {
+  min-height: 2.5rem;
+  word-break: break-word;
+}
+
+.align-center {
+  text-align: center;
+}
+
+.wait {
+  text-align: center;
+  .logo {
+    width: 10rem;
+    -webkit-animation: spin 4s linear infinite;
+    -moz-animation: spin 4s linear infinite;
+    animation: spin 4s linear infinite;
+  }
+  @-moz-keyframes spin {
+    100% {
+      -moz-transform: rotate(-360deg);
+    }
+  }
+  @-webkit-keyframes spin {
+    100% {
+      -webkit-transform: rotate(-360deg);
+    }
+  }
+  @keyframes spin {
+    100% {
+      -webkit-transform: rotate(-360deg);
+      transform: rotate(-360deg);
+    }
+  }
+}
+
+.label {
+  font-size: 11px;
+  @include all-caps();
+}
+
+.alert-text {
+  color: red;
+}
+
+// Page-specific
+img.keyboard {
+  max-width: 20rem;
+}
+
+.toc h2 {
+  @include all-caps();
+  font-size: 100%;
+  margin-top: 2rem;
+  text-align: center;
+}
+
+@media (min-width: 750px) {
+  .toc {
+    width: 25%;
+    margin-left: 5%;
+    float: right;
+  }
+}
+
+.snake-heads, .head-sets {
+  text-align: center;
+  margin: 0 0 2.5rem 0;
+
+  span {
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 175%;
+    padding: 0.5rem 1%;
+    max-width: 24%;
+
+    p, div.p {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+.hljs { // syntax highlighting
+  background-color: transparent;
+}
+
+table.coordinates, table.numbers {
+  * {
+    border: none;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  td, th {
+    padding: .5rem 1rem;
+    margin: 0;
+  }
+
+  td {
+    border: solid $black 1px;
+  }
+}
+
+// Responsive
+img {
+  max-width: 100%;
+}
