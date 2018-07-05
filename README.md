@@ -1,7 +1,1 @@
-## Running Locally
-
-```
-cd turtleDB
-npm install
-npm start
-```
+# TurtleDB MVP Testing

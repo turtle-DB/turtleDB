@@ -1,5 +1,6 @@
 class TurtleDB {
   constructor(name) {
+    this.name = name;
     this.ready = new Promise((resolve, reject) => {
       var request = window.indexedDB.open(name);
 
@@ -19,44 +20,45 @@ class TurtleDB {
       };
     });
   }
-}
 
-TurtleDB.prototype.get = function(key) {
-  return this.ready.then(() => {
-    return new Promise((resolve, reject) => {
-      var request = this.getStore().get(key);
-      request.onsuccess = e => resolve(e.target.result);
-      request.onerror = reject;
+  get(key) {
+    return this.ready.then(() => {
+      return new Promise((resolve, reject) => {
+        var request = this.getStore().get(key);
+        request.onsuccess = e => resolve(e.target.result);
+        request.onerror = reject;
+      });
     });
-  });
-};
+  }
 
-TurtleDB.prototype.getStore = function() {
-  return this.db
-    .transaction(['store'], 'readwrite')
-    .objectStore('store');
-};
+  getStore() {
+    return this.db
+      .transaction(['store'], 'readwrite')
+      .objectStore('store');
+  }
 
-TurtleDB.prototype.set = function(obj) {
-  return this.ready.then(() => {
-    return new Promise((resolve, reject) => {
-      var request = this.getStore();
-      request.put(obj, obj._id);
-      request.onsuccess = resolve;
-      request.onerror = reject;
+  set(obj) {
+    return this.ready.then(() => {
+      return new Promise((resolve, reject) => {
+        var request = this.getStore();
+        request.put(obj, obj.id);
+        request.onsuccess = resolve;
+        request.onerror = reject;
+      });
     });
-  });
-};
+  }
 
-TurtleDB.prototype.delete = function(key, value) {
-  window.indexedDB.deleteDatabase(location.origin);
-}
+  delete() {
+    window.indexedDB.deleteDatabase(this.name);
+  }
 
-TurtleDB.prototype.allDocs = function() {
-  return this.ready.then(() => {
-    return new Promise((resolve, reject) => {
-      var request = this.getStore().getAll();
-      request.onsuccess = e => resolve(e.target.result);
+  allDocs() {
+    return this.ready.then(() => {
+      return new Promise((resolve, reject) => {
+        var request = this.getStore().getAll();
+        request.onsuccess = e => resolve(e.target.result);
+        request.onerror = reject;
+      });
     });
-  });
+  }
 }
