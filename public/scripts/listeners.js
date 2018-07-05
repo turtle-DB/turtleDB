@@ -1,12 +1,18 @@
-////2nd file
+let dbName = 'turtleDB';
 
-const turtle = new TurtleDB('turtleDB');
+const turtle = new TurtleDB(dbName);
+
+function setHeader() {
+  var dbHeader = document.getElementById("db-name");
+  dbHeader.innerHTML = dbName;
+}
 
 function eventListeners() {
   document.getElementById("insert-form")
-    .addEventListener("submit", function (event) {
-      // event.preventDefault();
+    .addEventListener("submit", (event) => {
+      event.preventDefault();
       addDocWithID(event.target);
+      renderAllDocs();
     });
 
   document.getElementById("all-docs")
@@ -16,37 +22,39 @@ function eventListeners() {
     });
 
   document.getElementById("fetch-form")
-    .addEventListener("submit", function (event) {
+    .addEventListener("submit", (event) => {
       event.preventDefault();
       fetchWithID(event.target.id.value);
     });
 
-  renderAllDocs();
-}
-
-function consoleLogDocs() {
-  turtle.allDocs()
-    .then((res) => {
-      console.log(res);
-    }).catch((err) => {
-      console.log(err);
+  document.getElementById('update-form')
+    .addEventListener("", (event) => {
+      updateDoc(event.target);
     });
+
+  document.getElementById('delete-db')
+    .addEventListener('click', (event) => {
+      event.preventDefault();
+      deleteDatabase();
+    });
+
+  renderAllDocs();
+  setHeader();
 }
 
-function renderDoc(doc) {
-  console.log(doc);
-  var li = document.createElement("li");
-  li.classList.add("list-group-item");
-  li.innerHTML = `ID: ${doc._id}, Title: ${doc.title}`;
-  return li;
-}
-
-function renderDocs(docs) {
-  var ul = document.getElementById("docs");
-  ul.innerHTML = "";
-  docs.forEach((doc) => {
-    ul.appendChild(renderDoc(doc));
-  });
+function addDocWithID(form) {
+  turtle.set({
+    id: form.id.value,
+    title: form.title.value
+  })
+    .then(function (res) {
+      console.log(res);
+      form.id.value = '';
+      form.title.value = '';
+    })
+    .catch(function (err) {
+      console.error(err);
+    });
 }
 
 function renderAllDocs() {
@@ -59,26 +67,45 @@ function renderAllDocs() {
     });
 }
 
-function addDocWithID(form) {
-  turtle.set({
-    title: form.title.value,
-    _id: form.id.value,
-    done: false
-  })
-    .then(function (res) {
+function renderDocs(docs) {
+  var ul = document.getElementById("docs");
+  ul.innerHTML = "";
+  docs.forEach((doc) => {
+    ul.appendChild(renderDoc(doc));
+  });
+}
+
+function renderDoc(doc) {
+  var li = document.createElement("li");
+  li.classList.add("list-group-item");
+  li.innerHTML = `ID: ${doc.id}, Title: ${doc.title}`;
+  return li;
+}
+
+function consoleLogDocs() {
+  turtle.allDocs()
+    .then((res) => {
       console.log(res);
-      form.title.value = "";
-      form.title.id = "";
-      form.title.focus();
-      renderAllDocs();
-    })
-    .catch(function (err) {
-      console.error(err);
+    }).catch((err) => {
+      console.log(err);
     });
 }
 
 function fetchWithID(id) {
   turtle.get(id)
+    .then((res) => {
+      console.log(res);
+    }).catch((err) => {
+      console.log(err);
+    });
+}
+
+function updateDoc(form) {
+  // turtle.update?
+}
+
+function deleteDatabase() {
+  turtle.delete()
     .then((res) => {
       console.log(res);
     }).catch((err) => {
