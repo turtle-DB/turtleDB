@@ -1,3 +1,6 @@
+// Use like so:
+// const turtle = new TurtleDB(dbName);
+
 class TurtleDB {
   constructor(name) {
     this.name = name;
