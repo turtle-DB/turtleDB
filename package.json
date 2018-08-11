@@ -1,16 +1,48 @@
 {
   "name": "turtledb",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "uuid": "^3.3.2"
+  "version": "1.0.0",
+  "main": "dist/turtleDB.min.js",
+  "license": "MIT",
+  "description": "An offline-first JSON document database built using IndexedDB with out of the box versioning and sync.",
+  "homepage": "https://turtle-db.github.io/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/turtle-DB/turtleDB.git"
   },
+  "keywords": [
+    "indexeddb",
+    "offline-first",
+    "document",
+    "database",
+    "JSON",
+    "versioning"
+  ],
+  "contributors": [
+    {
+      "name": "Andrew Houston-Floyd",
+      "email": "andrew.houstonfloyd@gmail.com",
+      "url": ""
+    },
+    {
+      "name": "Steven Shen",
+      "email": "steeve.shen@gmail.com",
+      "url": ""
+    },
+    {
+      "name": "Max Appleton",
+      "email": "maxiappleton@gmail.com",
+      "url": "https://maxiappleton.github.io/"
+    }
+  ],
   "scripts": {
-    "test": "mocha"
+    "build": "webpack --config webpack.prod.js"
   },
-  "devDependencies": {
-    "chai": "^4.1.2",
-    "chai-as-promised": "^7.1.1",
-    "mocha": "^5.2.0"
+  "unpkg": "dist/turtleDB.min.js",
+  "dependencies": {
+    "debug": "^3.1.0",
+    "supports-color": "^5.4.0",
+    "axios": "^0.18.0",
+    "md5": "^2.2.1",
+    "uuid": "^3.3.2"
   }
 }
