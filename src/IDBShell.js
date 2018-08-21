@@ -142,11 +142,12 @@ class IDBShell {
     return this.ready;
   }
 
-  dropDB() {
+  dropDB(name) {
     return new Promise((resolve, reject) => {
-      const deleteRequest = window.indexedDB.deleteDatabase('turtleDB');
+      const deleteRequest = window.indexedDB.deleteDatabase(`turtleDB-${name}`);
+      console.log(name);
       deleteRequest.onsuccess = e => {
-        console.log('turtleDB was deleted successfully.');
+        console.log(`turtleDB-${name} was deleted successfully.`);
         resolve();
       }
       deleteRequest.onerror = e => {

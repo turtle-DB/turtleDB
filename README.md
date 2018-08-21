@@ -1,6 +1,6 @@
 # turtleDB
 
-![alt text](https://path-to-logo.png)
+!(https://path-to-logo.png)
 
 Some short description of our project. For example: An offline-first JSON document database built using IndexedDB with out of the box versioning and sync.
 

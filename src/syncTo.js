@@ -3,15 +3,13 @@ import axios from 'axios';
 const debug = require('debug');
 
 var log = debug('turtleDB:syncTo');
-var httpLog = debug('turtleDB:http');
-
-const BATCH_LIMIT = 20;
 
 class SyncTo {
-  constructor(targetUrl) {
+  constructor(targetUrl, batchLimit) {
     this.targetUrl = targetUrl;
     this.sessionID = new Date().toISOString();
     this.revIdsFromTortoise = [];
+    this.batchLimit = batchLimit;
   }
 
   start() {
@@ -28,9 +26,11 @@ class SyncTo {
       .catch(err => console.log('Sync To Error:', err));
   }
 
+  // #0 HTTP GET '/connect'
+
   checkServerConnection(path) {
     return axios.get(this.targetUrl + path)
-      .then((res) => {
+      .then(res => {
         log(`\n #0 HTTP <==> Tortoise connection checked`);
         return res.status === 200 ? true : false;
       })
@@ -43,6 +43,8 @@ class SyncTo {
         }
       });
   }
+
+  // #1 - #2 HTTP POST '/_last_tortoise_key'
 
   getSyncToTortoiseDoc() {
     return this.idb.command(this.idb._syncToStore, "READ_ALL", {})
@@ -68,13 +70,19 @@ class SyncTo {
       })
   }
 
+  // #3 - 4 HTTP POST '/_missing_rev_ids'
+
   getChangedMetaDocsForTortoise() {
-    return this.getMetaDocsBetweenStoreKeys(this.lastTortoiseKey, this.highestTurtleKey)
-      .then(metaDocs => this.changedTurtleMetaDocs = metaDocs)
-      .then(() => {
-        log(`\n getChangedMetaDocsForTortoise() - Get metadocs for all records between ${this.lastTortoiseKey} - ${this.highestTurtleKey} in the store`);
-        log(`\n getChangedMetaDocsForTortoise() - Found ${this.changedTurtleMetaDocs.length} metadocs to send to Tortoise`);
-      })
+    if (this.lastTortoiseKey === this.highestTurtleKey) {
+      return Promise.reject("No sync needed - last key and highest key are equal");
+    } else {
+      return this.getMetaDocsBetweenStoreKeys(this.lastTortoiseKey, this.highestTurtleKey)
+        .then(metaDocs => this.changedTurtleMetaDocs = metaDocs)
+        .then(() => {
+          log(`\n getChangedMetaDocsForTortoise() - Get metadocs for all records between ${this.lastTortoiseKey} - ${this.highestTurtleKey} in the store`);
+          log(`\n getChangedMetaDocsForTortoise() - Found ${this.changedTurtleMetaDocs.length} metadocs to send to Tortoise`);
+        })
+    }
   }
 
   batchSendChangedMetaDocsToTortoise(path) {
@@ -82,13 +90,12 @@ class SyncTo {
       log(`\n finished sending all batches of metadocs to Tortoise`);
       return;
     }
-    let currentBatch = this.changedTurtleMetaDocs.splice(0, BATCH_LIMIT);
+    let currentBatch = this.changedTurtleMetaDocs.splice(0, this.batchLimit);
 
     return this.sendBatchOfMetaDocs(path, currentBatch)
       .then(() => {
         return this.batchSendChangedMetaDocsToTortoise(path);
       });
-
   }
 
   sendBatchOfMetaDocs(path, batch) {
@@ -100,6 +107,8 @@ class SyncTo {
         this.revIdsFromTortoise.push(...revIdsFromTortoise.data);
       });
   }
+
+  // #5 - 6 HTTP POST '/_insert_docs'
 
   getStoreDocsForTortoise() {
     const promises = this.revIdsFromTortoise.map(_id_rev => {
@@ -119,7 +128,7 @@ class SyncTo {
   }
 
   batchSendTurtleDocsToTortoise(path) {
-    let currentBatch = this.storeDocsForTortoise.splice(0, BATCH_LIMIT);
+    let currentBatch = this.storeDocsForTortoise.splice(0, this.batchLimit);
 
     if (this.storeDocsForTortoise.length === 0) {
       return this.sendBatchOfDocs(path, currentBatch, true)
@@ -152,8 +161,6 @@ class SyncTo {
   // Utility Methods
 
   getMetaDocsBetweenStoreKeys(lastTortoiseKey, highestTurtleKey) {
-    lastTortoiseKey = lastTortoiseKey === undefined ? 0 : lastTortoiseKey;
-    highestTurtleKey = highestTurtleKey === undefined ? 0 : highestTurtleKey;
     return this.idb.command(this.idb._store, "READ_BETWEEN", { x: lastTortoiseKey, y: highestTurtleKey })
       .then(docs => this.getUniqueIDs(docs))
       .then(ids => this.getMetaDocsByIDs(ids))

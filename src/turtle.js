@@ -14,6 +14,7 @@ class TurtleDB {
   constructor(dbName = 'default') {
     this.idb = new IDBShell(`turtleDB-${dbName}`);
     this.syncInProgress = false;
+    this.batchLimit = 1000;
 
     for (const prop in developerAPI) {
       if (typeof developerAPI[prop] === 'function') {
@@ -41,28 +42,92 @@ class TurtleDB {
   }
 
   _readWithoutDeletedError(_id) {
+    let metaDoc;
+    let doc = {};
+
     return this._readMetaDoc(_id)
-      .then(metaDoc => {
-        if (!metaDoc._winningRev) { return Promise.resolve(false); }
-        return this._readRevFromIndex(_id, metaDoc._winningRev);
+      .then(returnedMetadoc => {
+        if (!returnedMetadoc._winningRev) { return Promise.resolve(false); }
+        metaDoc = returnedMetadoc;
+
+        return this._readRevFromIndex(_id, returnedMetadoc._winningRev);
+      })
+      .then(returnedDoc => {
+        if (!returnedDoc) { return false; }
+        return this._packageUpDoc(metaDoc, returnedDoc)
       })
       .then(doc => {
-        if (!doc) { return false; }
-        const data = Object.assign({}, doc);
-        [data._id, data._rev] = data._id_rev.split('::');
-        delete data._id_rev;
-        return data;
+        return doc;
       })
       .catch(err => console.log("Read error:", err));
   }
 
+  _packageUpDoc(metaDoc, docData) {
+    let doc = Object.assign({}, docData);
+    [doc._id, doc._rev] = doc._id_rev.split('::');
+    delete doc._id_rev;
+
+    return new Promise((resolve, reject) => {
+      if (metaDoc._leafRevs.length > 1) {
+        doc._conflicts = true;
+        doc._conflictVersions = [];
+
+        let conflictRevs = metaDoc._leafRevs.filter(rev => rev !== doc._rev);
+        let promises = conflictRevs.map(rev => {
+          return this._readRevFromIndex(metaDoc._id, rev)
+            .then(version => {
+              [version._id, version._rev] = version._id_rev.split('::');
+              delete version._id_rev;
+              doc._conflictVersions.push(version);
+            });
+        });
+
+        Promise.all(promises)
+          .then(() => {
+            resolve(doc);
+          });
+
+      } else {
+        resolve(doc);
+      }
+    })
+  }
+
+  _deleteAllOtherLeafRevs(metaDoc, _rev) {
+    const leafRevsToDelete = metaDoc._leafRevs.filter(rev => rev !== _rev);
+
+    let result = Promise.resolve();
+    leafRevsToDelete.forEach(rev => {
+      result = result.then(() => this.delete(metaDoc._id, rev));
+    });
+
+    return result;
+  }
+
   _generateNewDoc(_id, oldRev, newProperties) {
-    // const [_id, oldRev] = oldDoc._id_rev.split('::');
     const oldRevNumber = parseInt(oldRev.split('-')[0], 10);
     const newDoc = Object.assign({}, newProperties);
 
     delete newDoc._rev;
     delete newDoc._id;
+    delete newDoc._conflicts;
+    delete newDoc._conflictVersions;
+
+    const newRev = `${oldRevNumber + 1}-` + md5(oldRev + JSON.stringify(newDoc));
+    newDoc._id_rev = _id + "::" + newRev;
+    return newDoc;
+  }
+
+  _mergeDocs(oldDoc, newProperties) {
+    const [_id, oldRev] = oldDoc._id_rev.split('::');
+    const oldRevNumber = parseInt(oldRev.split('-')[0], 10);
+    const oldDocCopy = JSON.parse(JSON.stringify(oldDoc));
+    const newDoc = Object.assign(oldDocCopy, newProperties);
+
+    delete newDoc._rev;
+    delete newDoc._id;
+    delete newDoc._conflicts;
+    delete newDoc._conflictVersions;
 
     const newRev = `${oldRevNumber + 1}-` + md5(oldRev + JSON.stringify(newDoc));
     newDoc._id_rev = _id + "::" + newRev;
@@ -144,7 +209,7 @@ class TurtleDB {
 
   syncTo() {
     logTo('\n ------- NEW Turtle ==> Tortoise SYNC ------');
-    const syncTo = new SyncTo(this.remoteUrl);
+    const syncTo = new SyncTo(this.remoteUrl, this.batchLimit);
     syncTo.idb = this.idb;
     return syncTo.start()
       .then(() => logTo('\n ------- Turtle ==> Tortoise sync complete ------'));
@@ -162,7 +227,7 @@ class TurtleDB {
     let result = Promise.resolve();
     for (let i = 0; i < times; i += 1) {
       //create promise chain
-      result = result.then(() => this.idb.editFirstNDocuments(docs));
+      result = result.then(() => this.editFirstNDocuments(docs));
     }
 
     result.then(() => console.log('finished editing'));
@@ -209,7 +274,7 @@ class TurtleDB {
     return new Promise((resolve, reject) => {
       let updatePromises = [];
       let counter = 0;
-      this.idb.getStore(this._meta, 'readonly').openCursor().onsuccess = e => {
+      this.idb.getStore(this.idb._meta, 'readonly').openCursor().onsuccess = e => {
         const cursor = e.target.result;
         if (!cursor) {
           console.log('Cursor finished!');
@@ -219,8 +284,10 @@ class TurtleDB {
             const _id = e.target.result.value._id;
             updatePromises.push(
               this.read(_id)
-                .then(d => Object.assign(d, { age: Math.floor(Math.random() * 100 + 1) }))
-                .then(data => this.update(_id, data))
+                .then(doc => {
+                  let newDoc = Object.assign(doc, { age: Math.floor(Math.random() * 100000000000 + 1) });
+                  return this.update(_id, newDoc);
+                })
             );
           }
           counter++;

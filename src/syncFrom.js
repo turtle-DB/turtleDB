@@ -73,7 +73,7 @@ class SyncFrom {
       .then(({ data }) => {
         log(`\n #2 HTTP <== from Tortoise with ${data.metaDocs.length} changed metadocs`);
         if (data.metaDocs.length === 0) {
-          Promise.reject("0 metadocs recieved from Tortoise - no sync needed");
+          return Promise.reject("0 metadocs recieved from Tortoise - no sync needed");
         } else {
           this.metaDocsFromTortoise.push(...data.metaDocs);
 

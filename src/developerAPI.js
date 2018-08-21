@@ -6,6 +6,10 @@ const developerAPI = {
     this.remoteUrl = remoteUrl;
   },
 
+  setBatchLimit(number) {
+    this.batchLimit = number;
+  },
+
   sync() {
     if (!this.syncInProgress) {
       this.syncInProgress = true;
@@ -42,6 +46,8 @@ const developerAPI = {
 
       return this.idb.command(this.idb._meta, "CREATE", { data: metaDoc })
         .then(() => this.idb.command(this.idb._store, "CREATE", { data: newDoc }))
+        .then(() => this._packageUpDoc(metaDoc, newDoc))
+        .then(doc => doc)
         .catch(err => console.log("Create error:", err));
     } else {
       console.log('Please pass in a valid object.');
@@ -49,9 +55,12 @@ const developerAPI = {
   },
 
   read(_id, revId = null) {
+    let metaDoc;
+    let rev;
+
     return this._readMetaDoc(_id)
-      .then(metaDoc => {
-        let rev;
+      .then(returnedMetadoc => {
+        metaDoc = returnedMetadoc;
 
         if (!metaDoc._winningRev) {
           throw new Error("This document has been deleted.");
@@ -67,13 +76,29 @@ const developerAPI = {
 
         return this._readRevFromIndex(_id, rev);
       })
+      .then(returnedDoc => {
+        return this._packageUpDoc(metaDoc, returnedDoc);
+      })
       .then(doc => {
-        const data = Object.assign({}, doc);
-        [data._id, data._rev] = data._id_rev.split('::');
-        delete data._id_rev;
-        return data;
+        return doc;
       })
       .catch(err => console.log("Read error:", err));
+  },
+
+  readAll() {
+    const result = {};
+
+    return this.idb.command(this.idb._meta, "READ_ALL", {})
+      .then(metaDocs => {
+        metaDocs = metaDocs.filter(doc => doc._winningRev);
+        let promises = metaDocs.map(metaDoc => this._readWithoutDeletedError(metaDoc._id));
+        return Promise.all(promises);
+      })
+      .then(docs => {
+        docs = docs.filter(doc => !!doc);
+        return docs;
+      })
+      .catch(err => console.log("readAllMetaDocsAndDocs error:", err));
   },
 
   //requires a full document. will not append updates.
@@ -125,17 +150,84 @@ const developerAPI = {
 
         return this.idb.command(this.idb._meta, "UPDATE", { data: metaDoc });
       })
-      .then(() => {
-        const data = Object.assign({}, newDoc);
-        [data._id, data._rev] = data._id_rev.split('::');
-        delete data._id_rev;
-        return data;
+      .then(() => this._packageUpDoc(metaDoc, newDoc))
+      .then(doc => doc)
+      // .then(() => {
+      //   const data = Object.assign({}, newDoc);
+      //   [data._id, data._rev] = data._id_rev.split('::');
+      //   delete data._id_rev;
+      //   return data;
+      // })
+      .catch(err => console.log("Update error:", err));
+  },
+
+  appendUpdate(_id, newProperties, revId = null) {
+    let metaDoc;
+    let rev;
+    let newDoc;
+
+    return this._readMetaDoc(_id)
+      .then(returnedMetadoc => {
+        metaDoc = returnedMetadoc;
+
+        if (!metaDoc._winningRev) {
+          throw new Error("This document has been deleted.");
+        } else if (!revId) {
+          rev = metaDoc._winningRev;
+        } else {
+          if (metaDoc._leafRevs.includes(revId)) {
+            rev = revId;
+          } else {
+            throw new Error("Invalid Revision Id");
+          }
+        }
+        return this._readRevFromIndex(_id, rev);
       })
+      .then(oldDoc => {
+        newDoc = this._mergeDocs(oldDoc, newProperties);
+        this.idb.command(this.idb._store, "CREATE", { data: newDoc });
+
+        return {
+          newRev: newDoc._id_rev.split('::')[1],
+          oldRev: oldDoc._id_rev.split('::')[1]
+        };
+      })
+      .then(({ newRev, oldRev }) => {
+        // updating the meta doc:
+        this._updateMetaDocRevisionTree(metaDoc._revisions, newRev, oldRev, newProperties._deleted);
+
+        if (newProperties._deleted) {
+          metaDoc._leafRevs.splice(metaDoc._leafRevs.indexOf(oldRev), 1);
+        } else {
+          metaDoc._leafRevs[metaDoc._leafRevs.indexOf(oldRev)] = newRev;
+        }
+
+        metaDoc._winningRev = this._getWinningRev(metaDoc._leafRevs) || null;
+
+        return this.idb.command(this.idb._meta, "UPDATE", { data: metaDoc });
+      })
+      .then(() => this._packageUpDoc(metaDoc, newDoc))
+      .then(doc => doc)
+      // .then(() => {
+      //   const data = Object.assign({}, newDoc);
+      //   [data._id, data._rev] = data._id_rev.split('::');
+      //   delete data._id_rev;
+      //   return data;
+      // })
       .catch(err => console.log("Update error:", err));
   },
 
   delete(_id, revId = null) {
     return this.update(_id, { _deleted: true }, revId);
+  },
+
+  setConflictWinner(doc) {
+    const { _id, _rev } = doc;
+
+    return this._readMetaDoc(_id)
+      .then(metaDoc => this._deleteAllOtherLeafRevs(metaDoc, _rev))
+      .then(() => this.update(_id, doc, _rev))
+      .catch(err => console.log("setConflictWinner error:", err));
   },
 
 
@@ -187,18 +279,12 @@ const developerAPI = {
       });
   },
 
-  // BULK OPERATIONS
-
-  filterBy(selector) {
-    return this.idb.filterBy(selector);
-  },
-
   deleteAll() {
     return this.idb.command(this.idb._store, "DELETE_ALL", {});
   },
 
-  dropDB() {
-    return this.idb.dropDB();
+  dropDB(name) {
+    return this.idb.dropDB(name);
   },
 }
 
