@@ -12,13 +12,13 @@
 
 turtleDB is a JavaScript framework for developers to build offline-first, collaborative web applications. It provides a developer-friendly API to access an in-browser database on top of IndexedDB.
 
-It comes with built in document versioning and automatic server synchronization when paired with the back-end package [tortoiseDB](https://github.com/turtle-DB/tortoiseDB), as well as flexible conflict resolution for any potential document conflicts while collaborating.
+It comes with built in document versioning and automatic server synchronization when paired with our back-end package [tortoiseDB](https://github.com/turtle-DB/tortoiseDB), as well as developer-controlled, flexible conflict resolution strategies for any document conflicts while collaborating.
 
 You can check out our [API docs](https://turtle-db.github.io/api) and read more about the story behind project itself [here](https://turtle-db.github.io/about).
 
 Note: for the best user experience we strongly recommend using Chrome.
 
-<p align="center"><img width=80% src="https://turtle-db.github.io/images/api-example.gif"></p>
+<p align="center"><img width=80% src="/api-example.gif" /></p>
 
 ## Getting Started
 
