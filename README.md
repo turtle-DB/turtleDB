@@ -10,7 +10,7 @@
 
 # Overview
 
-turtleDB is a JavaScript framework for developers to build offline-first, collaborative web applications. It provides a developer-friendly API to access an in-browser database on top of IndexedDB.
+turtleDB is a JavaScript framework for developers to build offline-first, collaborative web applications. It provides a developer-friendly API to access an in-browser database built on top of IndexedDB.
 
 It comes with built in document versioning and automatic server synchronization when paired with our back-end package [tortoiseDB](https://github.com/turtle-DB/tortoiseDB), as well as developer-controlled, flexible conflict resolution strategies for any document conflicts while collaborating.
 
@@ -69,11 +69,11 @@ mydb.sync();
 
 ## Contributors
 
-<img width=200px src="https://turtle-db.github.io/images/andrew.png">
+<img width=150px src="https://turtle-db.github.io/images/andrew.png">
 <p><strong>Andrew Houston-Floyd - NYC</strong> - <a href="https://turtle-db.github.io">Website</a></p>
-<img width=200px src="https://turtle-db.github.io/images/max.png">
-<p><strong>Max Appleton - SF</strong> - <a href="https://maxiappleton.github.io/">Website</a></p>
-<img width=200px src="https://turtle-db.github.io/images/steven.png">
+<img width=150px src="https://turtle-db.github.io/images/max.png">
+<p><strong>Max Appleton - SF/Bay Area</strong> - <a href="https://maxiappleton.github.io/">Website</a></p>
+<img width=150px src="https://turtle-db.github.io/images/steven.png">
 <p><strong>Steven Shen - Toronto</strong> - <a href="https://rockdinosaur.github.io/">Website</a></p>
 
 ## License
