@@ -14,7 +14,7 @@ turtleDB is a JavaScript framework for developers to build offline-first, collab
 
 It comes with built in document versioning and automatic server synchronization when paired with our back-end package [tortoiseDB](https://github.com/turtle-DB/tortoiseDB), as well as developer-controlled, flexible conflict resolution strategies for any document conflicts while collaborating.
 
-You can check out our <a href="https://turtle-db.github.io/api" target="_blank">API documentation</a> and read more about the story behind project itself [here](https://turtle-db.github.io/about).
+You can check out our [API documentation](https://turtle-db.github.io/api) and read more about the story behind project itself [here](https://turtle-db.github.io/about).
 
 Note: for the best user experience we strongly recommend using Chrome.
 
@@ -56,6 +56,8 @@ mydb.delete('firstTurtle');
 mydb.sync();
 ```
 
+[Full API Documentation](https://turtle-db.github.io/api)
+
 ## Features
 
 - Simple Promise-based API
@@ -67,12 +69,12 @@ mydb.sync();
 
 ## Contributors
 
-<img width=200px style="border-radius: 10px" src="https://turtle-db.github.io/images/andrew.png">
-<p><strong>Andrew Houston-Floyd</strong>  - <a href="https://turtle-db.github.io" target="_blank">Website</a></p>
+<img width=200px src="https://turtle-db.github.io/images/andrew.png">
+<p><strong>Andrew Houston-Floyd - NYC</strong> - <a href="https://turtle-db.github.io">Website</a></p>
 <img width=200px src="https://turtle-db.github.io/images/max.png">
-- **Max Appleton** - [Website](https://maxiappleton.github.io/)
+<p><strong>Max Appleton - SF</strong> - <a href="https://maxiappleton.github.io/">Website</a></p>
 <img width=200px src="https://turtle-db.github.io/images/steven.png">
-- **Steven Shen** - [Website](https://rockdinosaur.github.io/)
+<p><strong>Steven Shen - Toronto</strong> - <a href="https://rockdinosaur.github.io/">Website</a></p>
 
 ## License
 
