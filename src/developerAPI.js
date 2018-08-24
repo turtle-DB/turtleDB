@@ -6,8 +6,8 @@ const developerAPI = {
     this.remoteUrl = remoteUrl;
   },
 
-  setBatchLimit(number) {
-    this.batchLimit = number;
+  setBatchLimit(batchLimit) {
+    this.batchLimit = batchLimit;
   },
 
   sync() {
@@ -161,7 +161,7 @@ const developerAPI = {
       .catch(err => console.log("Update error:", err));
   },
 
-  appendUpdate(_id, newProperties, revId = null) {
+  mergeUpdate(_id, newProperties, revId = null) {
     let metaDoc;
     let rev;
     let newDoc;
@@ -231,39 +231,44 @@ const developerAPI = {
   },
 
 
-  autoSyncOn() {
-    this.intervalId = setInterval(this.sync.bind(this), 3000);
+  autoSyncOn(interval = 3000) {
+    this.intervalId = setInterval(this.sync.bind(this), interval);
+    return true;
   },
 
   autoSyncOff() {
     clearInterval(this.intervalId);
+    return true;
   },
 
   compactStore() {
-    const allLeafIdRevs = [];
+    return new Promise((resolve, reject) => {
+      const allLeafIdRevs = [];
 
-    return this.idb.command(this.idb._meta, "READ_ALL", {})
-      .then((metaDocs) => {
-        metaDocs.forEach(metaDoc => {
-          let idRevs = metaDoc._leafRevs.map(rev => metaDoc._id + '::' + rev);
-          allLeafIdRevs.push(...idRevs);
-        });
+      this.idb.command(this.idb._meta, "READ_ALL", {})
+        .then((metaDocs) => {
+          metaDocs.forEach(metaDoc => {
+            let idRevs = metaDoc._leafRevs.map(rev => metaDoc._id + '::' + rev);
+            allLeafIdRevs.push(...idRevs);
+          });
 
-        this.idb.getStore(this.idb._store, 'readwrite').openCursor().onsuccess = (e) => {
-          let cursor = e.target.result;
+          this.idb.getStore(this.idb._store, 'readwrite').openCursor().onsuccess = (e) => {
+            let cursor = e.target.result;
 
-          if (cursor) {
-            let doc = cursor.value;
-            // If document is not a leaf rev
-            if (!allLeafIdRevs.includes(doc._id_rev) && !doc._deleted) {
-              var request = cursor.delete();
+            if (cursor) {
+              let doc = cursor.value;
+              // If document is not a leaf rev
+              if (!allLeafIdRevs.includes(doc._id_rev) && !doc._deleted) {
+                var request = cursor.delete();
+              }
+              cursor.continue();
+            } else {
+              resolve(true);
+              // console.log('Compation deletion finished!');
             }
-            cursor.continue();
-          } else {
-            console.log('Compation deletion finished!');
           }
-        }
-      })
+        })
+    });
   },
 
   getStorageInfo() {
@@ -279,9 +284,15 @@ const developerAPI = {
       });
   },
 
-  deleteAll() {
-    return this.idb.command(this.idb._store, "DELETE_ALL", {});
-  },
+  // deleteAll() {
+  //   const deleteStore = this.idb.command(this.idb._store, "DELETE_ALL", {});
+  //   const deleteMeta = this.idb.command(this.idb._meta, "DELETE_ALL", {});
+
+  //   return Promise.all([deleteStore, deleteMeta])
+  //     .then(() => true)
+  //     .catch(e => console.log('Delete all error:', e));
+
+  // },
 
   dropDB(name) {
     return this.idb.dropDB(name);

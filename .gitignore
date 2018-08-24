@@ -1,1 +1,5 @@
 /node_modules/
+webpack.prod.js
+package2.js
+package-lock.json
+.npmignore

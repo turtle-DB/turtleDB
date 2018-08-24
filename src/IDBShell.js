@@ -145,10 +145,9 @@ class IDBShell {
   dropDB(name) {
     return new Promise((resolve, reject) => {
       const deleteRequest = window.indexedDB.deleteDatabase(`turtleDB-${name}`);
-      console.log(name);
       deleteRequest.onsuccess = e => {
         console.log(`turtleDB-${name} was deleted successfully.`);
-        resolve();
+        resolve(true);
       }
       deleteRequest.onerror = e => {
         console.log('Error deleting database...');
