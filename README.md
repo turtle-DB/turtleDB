@@ -68,7 +68,7 @@ mydb.sync();
 ## Contributors
 
 <img width=200px src="https://turtle-db.github.io/images/andrew.png">
-- **Andrew Houston-Floyd** - [Website](link)
+<p><strong>Andrew Houston-Floyd</strong></p> - <a href="https://turtle-db.github.io" target="_blank">Website</a>
 <img width=200px src="https://turtle-db.github.io/images/max.png">
 - **Max Appleton** - [Website](https://maxiappleton.github.io/)
 <img width=200px src="https://turtle-db.github.io/images/steven.png">
