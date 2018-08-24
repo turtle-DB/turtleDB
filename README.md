@@ -24,8 +24,6 @@ Note: for the best user experience we strongly recommend using Chrome.
 
 ### Install
 
-Install
-
 ```javascript
 npm i turtledb
 ```
@@ -41,6 +39,7 @@ const TurtleDB = require('turtledb');
 ```javascript
 // Create a new database
 const mydb = new TurtleDB('example');
+
 // Link a remote tottoiseDB database to sync to
 mydb.setRemote('http://127.0.0.1:3000');
 
@@ -66,9 +65,9 @@ mydb.sync();
 
 ## Contributors
 
-- **Andrew Houston-Floyd** - [Andrew wesbite](link)
-- **Max Appleton** - [Max wesbite](https://maxiappleton.github.io/)
-- **Steven Shen** - [Steven wesbite](https://rockdinosaur.github.io/)
+- **Andrew Houston-Floyd** - [Website](link)
+- **Max Appleton** - [Website](https://maxiappleton.github.io/)
+- **Steven Shen** - [Website](https://rockdinosaur.github.io/)
 
 ## License
 
