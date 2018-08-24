@@ -22,15 +22,15 @@ Note: for the best user experience we strongly recommend using Chrome.
 <p align="center"><img width=80% src="/api-example.gif" /></p>
 <br>
 
-## Getting Started
+# Getting Started
 
-### Install
+## Install
 
 ```javascript
 npm i turtledb
 ```
 
-### Usage
+## Usage
 
 ```javascript
 import TurtleDB from 'turtledb';
@@ -45,7 +45,7 @@ const mydb = new TurtleDB('example');
 // Link a remote tortoiseDB database to sync to
 mydb.setRemote('http://127.0.0.1:3000');
 
-// CRUD Operations - all promise based
+// CRUD Operations - all return promises
 mydb.create({ _id: 'firstTurtle', species: 'Sea Turtle' });
 mydb.read('firstTurtle').then((doc) => console.log(doc));
 mydb.update('firstTurtle', { species: 'Giant Turtle' });
@@ -58,7 +58,7 @@ mydb.sync();
 
 [Full API Documentation](https://turtle-db.github.io/api)
 
-## Features
+# Features
 
 - Simple Promise-based API
 - Integration with IndexedDB
@@ -67,7 +67,7 @@ mydb.sync();
 - Batching during synchronization
 - Local database compaction
 
-## Contributors
+# Contributors
 
 <img width=150px src="https://turtle-db.github.io/images/andrew.png">
 <p><strong>Andrew Houston-Floyd - NYC</strong> - <a href="https://turtle-db.github.io">Website</a></p>
@@ -76,6 +76,6 @@ mydb.sync();
 <img width=150px src="https://turtle-db.github.io/images/steven.png">
 <p><strong>Steven Shen - Toronto</strong> - <a href="https://rockdinosaur.github.io/">Website</a></p>
 
-## License
+# License
 
 This project is licensed under the MIT License.
