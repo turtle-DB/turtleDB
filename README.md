@@ -14,11 +14,13 @@ turtleDB is a JavaScript framework for developers to build offline-first, collab
 
 It comes with built in document versioning and automatic server synchronization when paired with our back-end package [tortoiseDB](https://github.com/turtle-DB/tortoiseDB), as well as developer-controlled, flexible conflict resolution strategies for any document conflicts while collaborating.
 
-You can check out our [API docs](https://turtle-db.github.io/api) and read more about the story behind project itself [here](https://turtle-db.github.io/about).
+You can check out our <a href="https://turtle-db.github.io/api" target="_blank">API documentation</a> and read more about the story behind project itself [here](https://turtle-db.github.io/about).
 
 Note: for the best user experience we strongly recommend using Chrome.
 
+<br>
 <p align="center"><img width=80% src="/api-example.gif" /></p>
+<br>
 
 ## Getting Started
 
@@ -40,7 +42,7 @@ const TurtleDB = require('turtledb');
 // Create a new database
 const mydb = new TurtleDB('example');
 
-// Link a remote tottoiseDB database to sync to
+// Link a remote tortoiseDB database to sync to
 mydb.setRemote('http://127.0.0.1:3000');
 
 // CRUD Operations - all promise based
@@ -65,8 +67,11 @@ mydb.sync();
 
 ## Contributors
 
+<img width=200px src="https://turtle-db.github.io/images/andrew.png">
 - **Andrew Houston-Floyd** - [Website](link)
+<img width=200px src="https://turtle-db.github.io/images/max.png">
 - **Max Appleton** - [Website](https://maxiappleton.github.io/)
+<img width=200px src="https://turtle-db.github.io/images/steven.png">
 - **Steven Shen** - [Website](https://rockdinosaur.github.io/)
 
 ## License
