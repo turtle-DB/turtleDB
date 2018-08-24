@@ -1,6 +1,6 @@
 {
   "name": "turtledb",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/turtleDB.min.js",
   "license": "MIT",
   "description": "An offline-first JSON document database built using IndexedDB with out of the box versioning and sync.",
