@@ -1,4 +1,4 @@
-<p align="center"><img width=60% src="https://turtle-db.github.io/images/logo_full.png"></p>
+<p align="center"><img width=80% src="https://turtle-db.github.io/images/logo_full.png"></p>
 
 <p align="center">
   <a href="#overview">Overview</a> •
