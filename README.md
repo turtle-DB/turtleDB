@@ -10,7 +10,7 @@
 
 # Overview
 
-turtleDB is a JavaScript framework for developers to build offline-first, collaborative web applications. It provides a developer-friendly API to access an in-browser database built on top of IndexedDB.
+turtleDB is a JavaScript framework and in-browser database for developers to build offline-first, collaborative web applications. It provides a developer-friendly API to access an in-browser database built on top of IndexedDB.
 
 It comes with built in document versioning and automatic server synchronization when paired with our back-end package [tortoiseDB](https://github.com/turtle-DB/tortoiseDB), as well as developer-controlled, flexible conflict resolution strategies for any document conflicts while collaborating.
 
